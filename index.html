@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scandit Simple Sample</title>
+    <script src="https://cdn.jsdelivr.net/npm/scandit-sdk@5.x"></script>
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/html" href="style.css" />
+  </head>
+
+  <body>
+    <img src="assets/qr-img.jpeg" width="250" height="250" />
+    <div class="logo"></div>
+    <div class="name">Simple sample</div>
+    <div id="description" class="description">
+      Start the scanner and then aim at a barcode to get the encoded data.
+    </div>
+    <div id="lib-loading"><br />Library is loading, please wait...</div>
+    <button
+      id="barcode-picker-starter-button"
+      onclick="startBarcodePicker();"
+      hidden
+    >
+      Start Scanning
+    </button>
+    <div id="barcode-result" class="result-text">&nbsp;</div>
+    <div id="barcode-picker" class="scanner"></div>
+
+    <script>
+      let scanditBarcodePicker;
+
+      const key =
+        'AT7zOzedFMGEA8TQzjw8LJ057dQ1G0VzE1xcXP5qbK4TeT885G/2AwJChb23W38DbjhXASxUJgvuU6bGACj9vG9q/mmEUH+yeGmuacgSA6ijcuGdjEaLxZI/SlYUQHS6+yALzC8zn/gKOboQGzMoCyVCdlkaWtPKtkuQVA8icdvVUppPK10xTjYyend6RSDc52bISQ5Fjk8QTdw9P0dHkA1LSiadbNufolTF1sd030TjE5ZmvUFkDQZ4TOcxeZWRDHHQr/Ul1x+nVHo91nGE9rtHG3lJa7JPDGSq9iNiuWv2Y+WiPEqUc0IuR7OibyyTYzOcT5FE+48PNxoq5hvYv0ZR87e5HWNmRGuF+Zgz+ZfUUnl0kA3UCfNM63t3S57MF0XQsoNbNpYVQguIbgKOURl/VrAJfnZveVHksScgNcQ3ekM9p1ydtYBJRf7IdL1SazNr1sxYaIMVX4rW7yYIA/ICaw/5W7NTQzHemfD8kz1Rpy7aJFZM4w8GUfyH0172JW6epSNjDAykNHpAGza732yG4C5ibes0Vn+0JWzA6ffu1B+Dl+8lzpuG5jiVVQOp+JsGRZ6n8CqTTPBjd+do89DkGKEVqgFgI5aNgubQf3kUhuGGB9vWqhtaRWy0cRJqURq5nii0KykvyNG4UMSNyyf40McanmrY/IECd0y6H3g+yJpNhVXzCoN4LWCRG3kFSJvztIabJgw4gAMAmU8PwSJRyqUFrwAjI4LW8nvRdIfRH2mkMscIzL4gmkQ8RasAiNu9u75DFAQlG/FdFX9WB/0FI4GQtGXgPBHb9AB12iBGzi6ngEUOO0gJ9W7HWBhCWH/OvRTee5BbYlcHQ9JzwIurxGWN8w8s9hsTssFNAdg32AaXGjiSDo6/x1YBOtiS1i3Q7uKqExro/vL7SaDSyRvT+OluqNPeoqTFTS3Z7lMFZKYXqQDDvlEAujYxmGBbevRMUuE2rs7xSBrWj5+Mead5Y4aeF9UUDust9/VIApSGUAeTSEmknAORTU3CGkNhzw2BzXRgwIFnmrliBnZKlQoAZRmZdbYi3d5HY59Sndjc5phm76doFQGMS1uf+1BvVoW95vk0QHcNoGpgXN91iBAer42Ftbqrf9m6sDw15eZ3E0+aXYaytaHYFKpUbkzwCg==';
+      ScanditSDK.configure(key, {
+        engineLocation: 'https://cdn.jsdelivr.net/npm/scandit-sdk@5.x/build',
+      })
+        .then(function () {
+          return ScanditSDK.BarcodePicker.create(
+            document.getElementById('barcode-picker'),
+            {
+              scanningPaused: true,
+              accessCamera: false,
+              visible: false,
+              playSoundOnScan: true,
+              vibrateOnScan: true,
+            }
+          ).then(function (barcodePicker) {
+            scanditBarcodePicker = barcodePicker;
+            const scanSettings = new ScanditSDK.ScanSettings({
+              enabledSymbologies: ['pdf417'],
+              searchArea: { x: 0, y: 0.333, width: 1, height: 0.333 },
+            });
+            barcodePicker.applyScanSettings(scanSettings);
+            barcodePicker.on('ready', function () {
+              document.getElementById('lib-loading').hidden = true;
+              document.getElementById(
+                'barcode-picker-starter-button'
+              ).hidden = false;
+            });
+            barcodePicker.on('scan', function (scanResult) {
+              document.getElementById('barcode-result').innerHTML =
+                scanResult.barcodes.reduce(function (string, barcode) {
+                  return (
+                    string +
+                    ScanditSDK.Barcode.Symbology.toHumanizedName(
+                      barcode.symbology
+                    ) +
+                    ': ' +
+                    barcode.data +
+                    '<br>'
+                  );
+                }, '');
+            });
+            barcodePicker.on('scanError', function (error) {
+              console.error(error);
+            });
+          });
+        })
+        .catch(function (error) {
+          alert(error);
+        });
+
+      function startBarcodePicker() {
+        document.getElementById('barcode-picker-starter-button').hidden = true;
+        document.getElementById('description').hidden = true;
+
+        scanditBarcodePicker.accessCamera().then(function () {
+          scanditBarcodePicker.setVisible(true).resumeScanning();
+        });
+      }
+    </script>
+  </body>
+</html>
