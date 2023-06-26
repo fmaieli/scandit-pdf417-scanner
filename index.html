@@ -3,31 +3,134 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Scandit Simple Sample</title>
+    <title>Web SDK Scandit</title>
     <script src="https://cdn.jsdelivr.net/npm/scandit-sdk@5.x"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <script src="script.js"></script>
 
     <link
       href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" type="text/html" href="style.css" />
   </head>
 
   <body>
-    <img src="assets/qr-img.jpeg" width="250" height="250" />
-    <div class="logo"></div>
-    <div class="name">Simple sample</div>
-    <div id="description" class="description">
-      Start the scanner and then aim at a barcode to get the encoded data.
+    <div id="app"></div>
+
+    <div class="container">
+      <div id="lib-loading"><br />Library is loading, please wait...</div>
+      <button
+        class="btn btn-block"
+        id="barcode-picker-starter-button"
+        onclick="startBarcodePicker();"
+        hidden
+      >
+        <img
+          src="https://github.com/fmaieli/scandit-pdf417-scanner/blob/main/assets/qr-img.jpeg?raw=true"
+          width="250"
+          height="250"
+        />
+      </button>
+
+      <div class="col-md-8 order-md-1">
+        <form class="needs-validation" novalidate="">
+          <div class="row" id="nombreyapellido">
+            <div class="col-md-6 mb-3">
+              <label for="nombre">Nombre</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombre"
+                placeholder=""
+                value=""
+                required=""
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="apellido">Apellido</label>
+              <input
+                type="text"
+                class="form-control"
+                id="apellido"
+                placeholder=""
+                value=""
+                required=""
+              />
+            </div>
+          </div>
+          <div class="row" id="sexoydni">
+            <div class="col-md-6 mb-3">
+              <label for="sexo">Sexo</label>
+              <input
+                type="text"
+                class="form-control"
+                id="sexo"
+                placeholder=""
+                value=""
+                required=""
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="dni">DNI</label>
+              <input
+                type="text"
+                class="form-control"
+                id="dni"
+                placeholder=""
+                value=""
+                required=""
+              />
+            </div>
+          </div>
+          <div class="row" id="nacyemision">
+            <div class="col-md-6 mb-3">
+              <label for="fechaNac">Fecha de Nacimiento</label>
+              <input
+                type="text"
+                class="form-control"
+                id="fechaNac"
+                placeholder=""
+                value=""
+                required=""
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="fechaEmision">Fecha de Emisión</label>
+              <input
+                type="text"
+                class="form-control"
+                id="fechaEmision"
+                placeholder=""
+                value=""
+                required=""
+              />
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
-    <div id="lib-loading"><br />Library is loading, please wait...</div>
-    <button
-      id="barcode-picker-starter-button"
-      onclick="startBarcodePicker();"
-      hidden
-    >
-      Start Scanning
-    </button>
+
     <div id="barcode-result" class="result-text">&nbsp;</div>
     <div id="barcode-picker" class="scanner"></div>
 
@@ -53,7 +156,7 @@
             scanditBarcodePicker = barcodePicker;
             const scanSettings = new ScanditSDK.ScanSettings({
               enabledSymbologies: ['pdf417'],
-              searchArea: { x: 0, y: 0.333, width: 1, height: 0.333 },
+              searchArea: { x: 0, y: 0, width: 1, height: 1 },
             });
             barcodePicker.applyScanSettings(scanSettings);
             barcodePicker.on('ready', function () {
@@ -62,20 +165,35 @@
                 'barcode-picker-starter-button'
               ).hidden = false;
             });
+
             barcodePicker.on('scan', function (scanResult) {
-              document.getElementById('barcode-result').innerHTML =
-                scanResult.barcodes.reduce(function (string, barcode) {
-                  return (
-                    string +
-                    ScanditSDK.Barcode.Symbology.toHumanizedName(
-                      barcode.symbology
-                    ) +
-                    ': ' +
-                    barcode.data +
-                    '<br>'
-                  );
-                }, '');
+              scanResult.barcodes.reduce(function (string, barcode) {
+                let decodeData = arrayDecodeData(barcode.data);
+                console.log(decodeData);
+
+                document.getElementById('nombreyapellido').hidden = false;
+                $('#nombre').val(decodeData[2]);
+                $('#apellido').val(decodeData[1]);
+
+                document.getElementById('sexoydni').hidden = false;
+                if (decodeData[1] == 'M') {
+                  $('#sexo').val('Masculino');
+                } else {
+                  $('#sexo').val('Femenino');
+                }
+                $('#dni').val(decodeData[4]);
+
+                document.getElementById('nacyemision').hidden = false;
+                $('#fechaNac').val(decodeData[6]);
+                $('#fechaEmision').val(decodeData[7]);
+              }, '');
+
+              document.getElementById(
+                'barcode-picker-starter-button'
+              ).hidden = false;
+              closeCamera();
             });
+
             barcodePicker.on('scanError', function (error) {
               console.error(error);
             });
@@ -87,11 +205,24 @@
 
       function startBarcodePicker() {
         document.getElementById('barcode-picker-starter-button').hidden = true;
-        document.getElementById('description').hidden = true;
+        document.getElementById('nombreyapellido').hidden = true;
+        document.getElementById('sexoydni').hidden = true;
+        document.getElementById('nacyemision').hidden = true;
 
         scanditBarcodePicker.accessCamera().then(function () {
           scanditBarcodePicker.setVisible(true).resumeScanning();
         });
+      }
+
+      function closeCamera() {
+        scanditBarcodePicker.accessCamera().then(function () {
+          scanditBarcodePicker.setVisible(false);
+        });
+      }
+
+      function arrayDecodeData(string) {
+        let arrDecodedData = string.split('@');
+        return arrDecodedData;
       }
     </script>
   </body>

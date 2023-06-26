@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css": "*",
     "jquery": "^3.7.0"
   }
 }
