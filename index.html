@@ -20,7 +20,6 @@
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
     ></script>
-    <script src="script.js"></script>
 
     <link
       href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap"
@@ -36,8 +35,6 @@
   </head>
 
   <body>
-    <div id="app"></div>
-
     <div class="container">
       <div id="lib-loading"><br />Library is loading, please wait...</div>
       <button
@@ -176,7 +173,7 @@
                 $('#apellido').val(decodeData[1]);
 
                 document.getElementById('sexoydni').hidden = false;
-                if (decodeData[1] == 'M') {
+                if (decodeData[3] == 'M') {
                   $('#sexo').val('Masculino');
                 } else {
                   $('#sexo').val('Femenino');
